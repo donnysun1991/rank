@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>业绩排名表</title>
+
+    <!-- ✅ 微信 & 移动端关键设置 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        /* ===== 顶部统计区 ===== */
+        .stats-header {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .total-stats {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .total-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+
+        .total-info h2 {
+            color: #555;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .total-value {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .sort-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sort-control label {
+            color: #666;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .sort-select {
+            padding: 12px 40px 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 14px center;
+            appearance: none;
+        }
+
+        /* ===== 卡片容器 ===== */
+        .cards-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        /* ===== 业务员卡片 ===== */
+        .sales-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .sales-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .sales-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .sales-info h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #222;
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .rank-badge.gold { background: #fff3cd; color: #856404; }
+        .rank-badge.silver { background: #e9ecef; color: #495057; }
+        .rank-badge.bronze { background: #ffe8cc; color: #8b4513; }
+
+        .performance-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .performance-label {
+            color: #777;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .performance-value {
+            font-size: 30px;
+            font-weight: 800;
+            color: #222;
+        }
+
+        /* ===== PC / 平板适配 ===== */
+        @media (min-width: 640px) {
+            .stats-header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .cards-container {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="stats-header">
+        <div class="total-stats">
+            <div class="total-icon">📊</div>
+            <div class="total-info">
+                <h2>团队总业绩</h2>
+                <div class="total-value" id="totalValue">¥0</div>
+            </div>
+        </div>
+
+        <div class="sort-control">
+            <label for="sortOrder">排序：</label>
+            <select id="sortOrder" class="sort-select">
+                <option value="desc">从高到低</option>
+                <option value="asc">从低到高</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="cards-container" id="cardsContainer"></div>
+</div>
+
+<script>
+    // =========================
+    // ✅ 核心数据区（每日修改处）
+    // =========================
+    const salesData = [
+        {
+            name: "小白",
+            performance: 185000,
+            avatar: "https://s41.ax1x.com/2026/04/20/peglWLj.png"
+        },
+        {
+            name: "小张",
+            performance: 142000,
+            avatar: "https://s41.ax1x.com/2026/04/20/peglRyQ.png"
+        },
+        {
+            name: "小李",
+            performance: 131000,
+            avatar: "https://s41.ax1x.com/2026/04/20/pegl2Qg.png"
+        }
+        // 新增人员：复制上方 {} 结构粘贴于此
+    ];
+
+    // =========================
+    // 渲染逻辑（无需修改）
+    // =========================
+    const rankIcons = ['🥇', '🥈', '🥉'];
+    const rankClasses = ['gold', 'silver', 'bronze'];
+
+    function renderPage() {
+        renderTotal();
+        renderCards();
+        bindSortEvent();
+    }
+
+    function renderTotal() {
+        const total = salesData.reduce((sum, item) => sum + item.performance, 0);
+        document.getElementById('totalValue').textContent = `¥${total.toLocaleString()}`;
+    }
+
+    function renderCards(order = 'desc') {
+        const container = document.getElementById('cardsContainer');
+        container.innerHTML = '';
+
+        const sortedData = [...salesData].sort((a, b) =>
+            order === 'asc' ? a.performance - b.performance : b.performance - a.performance
+        );
+
+        sortedData.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'sales-card';
+
+            const rankIndex = index < 3 ? index : 2;
+            const badgeClass = rankClasses[rankIndex];
+            const icon = rankIcons[rankIndex] || '🏅';
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <img src="${item.avatar}" alt="${item.name}照片" class="avatar">
+                    <div class="sales-info">
+                        <h3>${item.name}</h3>
+                        <span class="rank-badge ${badgeClass}">${icon} 第 ${index + 1} 名</span>
+                    </div>
+                </div>
+                <div class="performance-section">
+                    <div class="performance-label">本月业绩</div>
+                    <div class="performance-value">
+                        ¥${item.performance.toLocaleString()}<span style="font-size:16px;color:#888;">元</span>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(card);
+        });
+    }
+
+    function bindSortEvent() {
+        document.getElementById('sortOrder').addEventListener('change', function () {
+            renderCards(this.value);
+        });
+    }
+
+    renderPage();
+</script>
+
+</body>
+</html>
